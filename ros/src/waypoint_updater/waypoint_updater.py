@@ -25,16 +25,19 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 200  # Number of waypoints we will publish. You can change this number
-TARGET_CRUISE_V = 10
+TARGET_CRUISE_V = 12
 TARGET_CREEP_SPEED = 1.0
-TARGET_STOP_V = -8.0
-BRAKING_DISTANCE = 40.0
-HARD_STOP_DISTANCE = 10.0
+#TARGET_STOP_V = -8.0
+TARGET_STOP_V = -16.0
+#BRAKING_DISTANCE = 40.0
+BRAKING_DISTANCE = 50.0
+#HARD_STOP_DISTANCE = 10.0
+HARD_STOP_DISTANCE = 30.0
 
 
 class WaypointUpdater(object):
     def __init__(self):
-        self.rate = 2
+        self.rate = 10
         self.track_waypoints = None
         self.car_point = None
         self.stop_waypoint_index = -1
@@ -108,9 +111,9 @@ class WaypointUpdater(object):
 
     def compute_breaking_velocities(self, next_waypoint_next, stop_waypoint_index):
         current_v = self.current_linear_velocity
-        breaking_velocities = []
+        breaking_velocities = {}
 
-        for i in range(stop_waypoint_index + 1):
+        for i in range(next_waypoint_next, stop_waypoint_index + 1):
             velocity = TARGET_CRUISE_V \
                 if i < next_waypoint_next \
                 else current_v + ((TARGET_STOP_V - current_v) *
@@ -124,7 +127,7 @@ class WaypointUpdater(object):
             if WaypointUpdater.total_distance(self.track_waypoints.waypoints, i, stop_waypoint_index) < HARD_STOP_DISTANCE:
                 velocity = 0.0
 
-            breaking_velocities.append(velocity)
+            breaking_velocities[i] = velocity
 
         return breaking_velocities
 
